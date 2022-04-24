@@ -1,7 +1,3 @@
-function mappingAt(number, clientX) {
-    return (number / innerWidth) * clientX;
-}
-
 window.addEventListener('mousemove', (e) => {
     const clientX = e.clientX;
     document.querySelectorAll('.symbol-1').forEach((target) => {
@@ -19,10 +15,13 @@ window.addEventListener('mousemove', (e) => {
 });
 
 // 홀수인 경우
-
+function mappingAt(number, clientX) {
+    return (number / innerWidth) * clientX;
+}
 function makeSymbolRow(selector) {
+    const speed = 3;
     const length = 15;
-    const maxWidth = 30;
+    const maxWidth = 12;
     const minWidth = 1;
     const step = (maxWidth - minWidth) / (length - 1);
     const mappingOgArr = [];
@@ -30,7 +29,6 @@ function makeSymbolRow(selector) {
     let mappingArr = [];
     const parent = document.querySelector(selector);
     document.body.append(parent);
-    // parent.style.gap = `${100 / length}vw`;
     // 부모요소 symbols에 원하는 만큼 symbol 넣기
     for (let i = 0; i < length; i++) {
         const ELEM = document.createElement('div');
@@ -42,29 +40,26 @@ function makeSymbolRow(selector) {
         ELEM.append(ElemChild);
         parent.append(ELEM);
     }
-
     for (let i = 0; i < parent.children.length; i++) {
         parent.children[i].children[0].style.width = `${maxWidth - step * i}px`;
         mappingOgArr.push(maxWidth - step * i);
     }
     // 배열의 깊은 복사가 필요해서 slice함
     mappingNewArr = mappingOgArr.slice().reverse();
-
     for (let i = 0; i < mappingOgArr.length; i++) {
         mappingArr.push(mappingOgArr[i] - mappingNewArr[i]);
     }
-
-    window.addEventListener('mousemove', (e) => {
-        const clientX = e.clientX;
-
+    let callback = function () {
+        let ts = new Date().getTime();
         for (let i = 0; i < parent.children.length; i++) {
-            parent.children[i].children[0].style.width = `${maxWidth - step * i - mappingAt(mappingArr[i], clientX)}px`;
-
+            parent.children[i].children[0].style.width = `${
+                maxWidth - step * i - ((Math.sin(ts * speed * (1 / 1000)) * mappingArr[i]) / 2 + mappingArr[i] / 2)
+            }px`;
             parent.children[i].children[0].style.position = 'relative';
-
-            parent.children[i].children[0].style.right = `${maxWidth - step * i - mappingAt(mappingArr[i], clientX) / 2}px`;
         }
-    });
+        requestAnimationFrame(callback);
+    };
+    requestAnimationFrame(callback);
 }
 makeSymbolRow('.symbols-1');
 makeSymbolRow('.symbols-2');
